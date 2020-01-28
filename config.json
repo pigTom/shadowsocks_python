@@ -1,0 +1,21 @@
+{
+    "server": "207.148.6.208",
+    "server_ipv6": "::",
+    "server_port": 45328,
+    "local_address": "127.0.0.1",
+    "local_port": 1080,
+    "password": "Tdhdh1264",
+    "timeout": 120,
+    "udp_timeout": 60,
+    "method": "aes-256-cfb",
+    "protocol": "auth_sha1_v4_compatible",
+    "protocol_param": "",
+    "obfs": "http_simple_compatible",
+    "obfs_param": "",
+    "dns_ipv6": false,
+    "connect_verbose_info": 1,
+    "redirect": "",
+    "fast_open": false,
+    "workers": 1
+
+}
