@@ -1,4 +1,4 @@
-ShadowsocksR
+copy from ShadowsocksR
 ===========
 
 [![Build Status]][Travis CI]
@@ -13,16 +13,16 @@ Server
 Debian / Ubuntu:
 
     apt-get install git
-    git clone https://github.com/shadowsocksr/shadowsocksr.git
+    git clone https://github.com/pigTom/shadowsocks_python.git
 
 CentOS:
 
     yum install git
-    git clone https://github.com/shadowsocksr/shadowsocksr.git
+    git clone https://github.com/pigTom/shadowsocks_python.git
 
 Windows:
 
-    git clone https://github.com/shadowsocksr/shadowsocksr.git
+    git clone https://github.com/pigTom/shadowsocks_python.git
 
 ### Usage for single user on linux platform
 

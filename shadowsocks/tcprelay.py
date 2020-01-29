@@ -742,7 +742,7 @@ class TCPRelayHandler(object):
             connecttype, addrtype, remote_addr, remote_port, header_length = header_result
             # connecttype always zero by parse_header
             if connecttype != 0:
-                pass
+                pass # ||apidata.googleusercontent.com^
                 #common.connect_log('UDP over TCP by user %d' %
                 #        (self._user_id, ))
             else:
@@ -753,7 +753,7 @@ class TCPRelayHandler(object):
             # pause reading
             # 由于现在是stage_addr阶段，地址协商阶段，如果是ssserver端的服务器地址协商？
             # stream up and writing status
-            # 之前是读事件，现在将sock绑定的事件从读写成写事件
+            # 之前是读事件，现在将sock绑定的事件从读写成写事件,是写给ssserver
             self._update_stream(STREAM_UP, WAIT_STATUS_WRITING)
             self._stage = STAGE_DNS
             if self._is_local:
@@ -987,6 +987,7 @@ class TCPRelayHandler(object):
         try:
             # 读取数据（没有通过加密）
             data = self._local_sock.recv(recv_buffer_size)
+            logging.info("read from [%s]: [%s]" % (self._local_sock.fileno, data))
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
                     (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK):
@@ -1096,6 +1097,7 @@ class TCPRelayHandler(object):
                 else:
                     recv_buffer_size = self._get_read_size(self._remote_sock, self._recv_buffer_size, False)
                 data = self._remote_sock.recv(recv_buffer_size)
+                print("local read: ", data)
                 self._recv_pack_id += 1
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
@@ -1155,6 +1157,7 @@ class TCPRelayHandler(object):
         if self._data_to_write_to_local:
             data = b''.join(self._data_to_write_to_local)
             self._data_to_write_to_local = []
+            logging.info("write to [%s]: [%s]" % (self._local_sock.fileno, data))
             self._write_to_sock(data, self._local_sock)
         else:
             self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)
@@ -1379,7 +1382,7 @@ class TCPRelay(object):
         # socktype: SocketKind.SOCK_STREAM: 1
         # proto: tcp 6
         server_socket = socket.socket(af, socktype, proto)
-        # 说实话我不知道这个是干嘛的？？，配置socket ??
+        # 配置socket可重用，在程序重启时可重新绑定地址
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # 绑定地址(ip+port)
         server_socket.bind(sa)
