@@ -350,10 +350,13 @@ class TCPRelayHandler(object):
         # check if status is changed
         # only update if dirty
         dirty = False
+        # read remote and write to local
         if stream == STREAM_DOWN:
             if self._downstream_status != status:
                 self._downstream_status = status
                 dirty = True
+
+        # read local and write to remote
         elif stream == STREAM_UP:
             if self._upstream_status != status:
                 self._upstream_status = status
@@ -370,7 +373,6 @@ class TCPRelayHandler(object):
                 if self._upstream_status & WAIT_STATUS_READING:
                     event |= eventloop.POLL_IN
 
-                # what about writing to server and reading from server ???
                 self._loop.modify(self._local_sock, event)
 
             # remote server
@@ -450,6 +452,11 @@ class TCPRelayHandler(object):
                 self._update_activity(len(data))
                 if data:
                     l = len(data)
+                    if sock == self._local_sock:
+                        dirc = "local"
+                    else:
+                        dirc = "remote"
+                    logging.info("write to [%s]: [%s]" % (dirc, data))
                     s = sock.send(data)
                     if s < l:
                         data = data[s:]
@@ -604,7 +611,6 @@ class TCPRelayHandler(object):
 
     def _handle_stage_connecting(self, data):
         """
-        handle state之后就建立了
         :param data:
         :return:
         """
@@ -777,6 +783,7 @@ class TCPRelayHandler(object):
                     return
 
                 if data_to_send:
+                    logging.info("append to _data_to_write_to_remote: [%s]" % data_to_send)
                     self._data_to_write_to_remote.append(data_to_send)
                 # notice here may go into _handle_dns_resolved directly
                 # self._stage => STAGE_CONNECTING
@@ -786,6 +793,7 @@ class TCPRelayHandler(object):
             else:
                 if len(data) > header_length:
                     self._data_to_write_to_remote.append(data[header_length:])
+                    logging.info("after append to remote: [%s]" % self._data_to_write_to_remote)
                 # notice here may go into _handle_dns_resolved directly
                 self._dns_resolver.resolve(remote_addr,
                                            self._handle_dns_resolved)
@@ -930,11 +938,11 @@ class TCPRelayHandler(object):
                                        eventloop.POLL_ERR | eventloop.POLL_OUT,
                                        self._server)
                         self._stage = STAGE_CONNECTING
-                        # stream is up and event for both reading and writing
+                        # step 1: local reading and remote writing
                         self._update_stream(STREAM_UP, WAIT_STATUS_READWRITING)
-                        # and then change the direction of stream and event for reading ?why
+                        # step 2: remote reading
                         self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)
-
+                        # after step 1、2， local will reading and remote reading writing
                         if self._remote_udp:
                             while self._data_to_write_to_remote:
                                 data = self._data_to_write_to_remote[0]
@@ -987,6 +995,7 @@ class TCPRelayHandler(object):
         try:
             # 读取数据（没有通过加密）
             data = self._local_sock.recv(recv_buffer_size)
+            logging.info("reading from local, original data: [%s]" % (data))
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
                     (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK):
@@ -1076,6 +1085,7 @@ class TCPRelayHandler(object):
         data = None
         try:
             if self._remote_udp:
+                logging.info("remote_udp is true why???")
                 if is_remote_sock:
                     data, addr = self._remote_sock.recvfrom(UDP_MAX_BUF_SIZE)
                 else:
@@ -1096,6 +1106,7 @@ class TCPRelayHandler(object):
                 else:
                     recv_buffer_size = self._get_read_size(self._remote_sock, self._recv_buffer_size, False)
                 data = self._remote_sock.recv(recv_buffer_size)
+                logging.info("reading from remote, original data: [%s]" % (data))
                 self._recv_pack_id += 1
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
@@ -1256,6 +1267,7 @@ class TCPRelayHandler(object):
         # 3. destroy won't raise any exceptions
         # if any of the promises are broken, it indicates a bug has been
         # introduced! mostly likely memory leaks, etc
+        logging.info("destroyed")
         if self._stage == STAGE_DESTROYED:
             # this couldn't happen
             logging.debug('already destroyed')

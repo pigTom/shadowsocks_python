@@ -29,7 +29,7 @@ from shadowsocks import encrypt
 
 VERBOSE_LEVEL = 5
 
-verbose = 0
+verbose = 1
 
 
 def check_python():

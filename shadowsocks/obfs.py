@@ -34,12 +34,15 @@ method_supported.update(verify.obfs_map)
 method_supported.update(auth.obfs_map)
 method_supported.update(auth_chain.obfs_map)
 
+
 def mu_protocol():
     return ["auth_aes128_md5", "auth_aes128_sha1", "auth_chain_a"]
+
 
 class server_info(object):
     def __init__(self, data):
         self.data = data
+
 
 class obfs(object):
     def __init__(self, method):
