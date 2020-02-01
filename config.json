@@ -1,10 +1,10 @@
 {
-    "server": "207.148.6.208",
+    "server": "0.0.0.0",
     "server_ipv6": "::",
     "server_port": 45328,
     "local_address": "127.0.0.1",
-    "local_port": 1080,
-    "password": "Tdhdh1264",
+    "local_port": 1081,
+    "password": "TDH126433",
     "timeout": 120,
     "udp_timeout": 60,
     "method": "aes-256-cfb",
